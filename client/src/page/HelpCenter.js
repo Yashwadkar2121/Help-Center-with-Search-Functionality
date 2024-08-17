@@ -1,6 +1,14 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 function HelpCenter() {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/cards") // replace with your API endpoint
+      .then((response) => response.json())
+      .then((data) => setData(data));
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center">
       <div className="bg-black w-full flex justify-around items-center text-white p-4">
@@ -32,13 +40,12 @@ function HelpCenter() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 px-4 max-w-5xl">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold">Branches</h2>
-          <p className="mt-2 text-gray-600">
-            Abstract Branches lets you manage, version, and document your
-            designs in one place.
-          </p>
-        </div>
+        {data.map((item, index) => (
+          <div key={index} className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold">{item.title}</h2>
+            <p className="mt-2 text-gray-600">{item.description}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
