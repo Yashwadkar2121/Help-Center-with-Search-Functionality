@@ -1,13 +1,34 @@
 import React, { useState, useEffect } from "react";
+import Highlighter from "react-highlight-words";
 
 function HelpCenter() {
   const [data, setData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/cards") // replace with your API endpoint
+    fetch("http://localhost:5000/api/cards")
       .then((response) => response.json())
       .then((data) => setData(data));
   }, []);
+
+  useEffect(() => {
+    const filteredCards = data.filter((item) => {
+      const title = item.title.toLowerCase();
+      const description = item.description.toLowerCase();
+      const searchTermLower = searchTerm.toLowerCase();
+
+      return (
+        title.includes(searchTermLower) || description.includes(searchTermLower)
+      );
+    });
+
+    setFilteredData(filteredCards);
+  }, [searchTerm, data]);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center">
@@ -27,6 +48,8 @@ function HelpCenter() {
             <input
               type="text"
               placeholder="Search"
+              value={searchTerm}
+              onChange={handleSearch}
               className="w-full p-3 pl-10 border border-gray-300 rounded-lg shadow-sm"
             />
             <span
@@ -40,10 +63,24 @@ function HelpCenter() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 px-4 max-w-5xl">
-        {data.map((item, index) => (
+        {filteredData.map((item, index) => (
           <div key={index} className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold">{item.title}</h2>
-            <p className="mt-2 text-gray-600">{item.description}</p>
+            <h2 className="text-xl font-semibold">
+              <Highlighter
+                highlightClassName="highlight"
+                searchWords={[searchTerm]}
+                autoEscape={true}
+                textToHighlight={item.title}
+              />
+            </h2>
+            <p className="mt-2 text-gray-600">
+              <Highlighter
+                highlightClassName="highlight"
+                searchWords={[searchTerm]}
+                autoEscape={true}
+                textToHighlight={item.description}
+              />
+            </p>
           </div>
         ))}
       </div>
