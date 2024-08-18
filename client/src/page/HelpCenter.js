@@ -33,7 +33,9 @@ function HelpCenter() {
 
   const handleSearch = (e) => {
     if (e.key === "Enter" || e.type === "click") {
-      fetchSearchResults();
+      if (searchTerm.trim() !== "") {
+        fetchSearchResults();
+      }
     }
   };
 
@@ -73,25 +75,30 @@ function HelpCenter() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center">
+    <div className="min-h-screen md:min-h-0 bg-gray-100 flex flex-col items-center">
       <div className="bg-black w-full flex justify-around items-center text-white p-4">
         <div>
-          <h3>Abstract | Help Center</h3>
+          <h3 className="text-xs md:text-base">Abstract | Help Center</h3>
         </div>
-        <button className="px-2 py-1 rounded-md border border-gray-700 bg-slate-900">
-          Submit a request
-        </button>
-        <button
-          className="px-2 py-1 rounded-md border border-gray-700 bg-slate-900"
-          onClick={() => setShowModal(true)}
-        >
-          Add a help Service
-        </button>
+        <div className="space-x-2">
+          {" "}
+          <button className="px-2 py-1 rounded-md border border-gray-700 bg-slate-900 text-xs md:text-base">
+            Submit a request
+          </button>
+          <button
+            className="px-2 py-1 rounded-md border border-gray-700 bg-slate-900 text-xs md:text-base"
+            onClick={() => setShowModal(true)}
+          >
+            <i className="fa-solid fa-plus"></i>
+          </button>
+        </div>
       </div>
-      <div className="bg-gray-200 p-24 w-full">
-        <h1 className="text-4xl font-bold text-center">How can we help?</h1>
+      <div className="bg-gray-200 p-3 md:p-24 w-full">
+        <h1 className="text-xl font-bold text-center md:text-4xl lg:text-5xl ">
+          How can we help?
+        </h1>
 
-        <div className="w-full max-w-md mt-8 flex m-auto">
+        <div className="w-full max-w-md md:mt-8 mt-2  flex m-auto">
           <div className="relative w-full">
             <input
               type="text"
@@ -110,7 +117,7 @@ function HelpCenter() {
           </div>
         </div>
         {loading ? (
-          <p>Loading...</p>
+          <p className="flex justify-center text-2xl font-bold">Loading...</p>
         ) : (
           <ul>
             {searchResults.map((card) => (
