@@ -5,16 +5,20 @@ function HelpCenter() {
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(true); // Set loading to true initially
   const [showModal, setShowModal] = useState(false);
   const [newCard, setNewCard] = useState({ title: "", description: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
 
-  // Fetching the cards data from the server
   useEffect(() => {
+    setLoading(true); // Set loading to true when starting to fetch data
     fetch("http://localhost:5000/api/cards")
       .then((response) => response.json())
-      .then((data) => setData(data));
+      .then((data) => {
+        setData(data);
+        setLoading(false); // Set loading to false after data is fetched
+      });
   }, []);
 
   useEffect(() => {
@@ -22,33 +26,18 @@ function HelpCenter() {
       const title = item.title.toLowerCase();
       const description = item.description.toLowerCase();
       const searchTermLower = searchTerm.toLowerCase();
-
       return (
         title.includes(searchTermLower) || description.includes(searchTermLower)
       );
     });
 
     setFilteredData(filteredCards);
+    setCurrentPage(1); // Reset to first page on search
   }, [searchTerm, data]);
 
   const handleSearch = (e) => {
     if (e.key === "Enter" || e.type === "click") {
-      if (searchTerm.trim() !== "") {
-        fetchSearchResults();
-      }
-    }
-  };
-
-  const fetchSearchResults = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/cards/${searchTerm}`);
-      const data = await response.json();
-      setSearchResults(data);
-    } catch (error) {
-      console.error("Error fetching search results:", error);
-    } finally {
-      setLoading(false);
+      setCurrentPage(1); // Reset to the first page on search
     }
   };
 
@@ -74,6 +63,18 @@ function HelpCenter() {
     }
   };
 
+  // Pagination controls
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentCards = filteredData.slice(startIndex, endIndex);
+
+  const goToPage = (page) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <div className="min-h-screen md:min-h-0 bg-gray-100 flex flex-col items-center">
       <div className="bg-black w-full flex justify-around items-center text-white p-4">
@@ -81,7 +82,6 @@ function HelpCenter() {
           <h3 className="text-xs md:text-base">Abstract | Help Center</h3>
         </div>
         <div className="space-x-2">
-          {" "}
           <button className="px-2 py-1 rounded-md border border-gray-700 bg-slate-900 text-xs md:text-base">
             Submit a request
           </button>
@@ -116,19 +116,10 @@ function HelpCenter() {
             </span>
           </div>
         </div>
-        {loading ? (
-          <p className="flex justify-center text-2xl font-bold">Loading...</p>
-        ) : (
-          <ul>
-            {searchResults.map((card) => (
-              <li key={card._id}>{card.title}</li>
-            ))}
-          </ul>
-        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 px-4 max-w-5xl">
-        {filteredData.map((item, index) => (
+        {currentCards.map((item, index) => (
           <div key={index} className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold">
               <Highlighter
@@ -148,6 +139,37 @@ function HelpCenter() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Pagination controls */}
+      <div className="flex justify-center space-x-2 mt-4">
+        <button
+          className="px-3 py-1 bg-gray-300 rounded-md"
+          disabled={currentPage === 1}
+          onClick={() => goToPage(currentPage - 1)}
+        >
+          Prev
+        </button>
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button
+            key={index}
+            className={`px-3 py-1 rounded-md ${
+              currentPage === index + 1
+                ? "bg-blue-500 text-white"
+                : "bg-gray-300"
+            }`}
+            onClick={() => goToPage(index + 1)}
+          >
+            {index + 1}
+          </button>
+        ))}
+        <button
+          className="px-3 py-1 bg-gray-300 rounded-md"
+          disabled={currentPage === totalPages}
+          onClick={() => goToPage(currentPage + 1)}
+        >
+          Next
+        </button>
       </div>
 
       {/* Modal for adding a new card */}
